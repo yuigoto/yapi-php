@@ -2,7 +2,7 @@
 namespace YAPI\Core;
 
 /**
- * YAPI/SLIM : Yapi\Core\Utilities
+ * YAPI/SLIM : YAPI\Core\Utilities
  * ----------------------------------------------------------------------
  * Provides helper static methods for small tasks.
  *

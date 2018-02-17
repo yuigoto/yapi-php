@@ -1,5 +1,5 @@
 <?php
-use \API\v1\RouteHandler;
+use \API\RouteHandler;
 use \Doctrine\ORM\EntityManager;
 use \Doctrine\ORM\Tools\Setup;
 use \Monolog\Logger;
@@ -36,8 +36,8 @@ class Api
     /**
      * Slim container instance handle.
      *
-     * It handles all middleware and configuration data.
-     *
+     * It handles all dependencies that need to be injected into our app.
+     * 
      * @var Container
      */
     private $container;
@@ -65,9 +65,9 @@ class Api
         // Set container
         $this->container = $container;
         
-        // Define middleware for container
+        // Inject dependencies into the container
         try {
-            $this->middleware($this->container);
+            $this->dependencies($this->container);
         } catch (Exception $e) {
             echo $e->getMessage();
         }
@@ -161,13 +161,13 @@ class Api
     }
     
     /**
-     * Defines middleware in the application's container.
+     * Inject some dependencies into the application's container.
      *
      * @param Container $container
      *      Application container
      * @throws \Doctrine\ORM\ORMException
      */
-    private function middleware(&$container)
+    private function dependencies(&$container)
     {
         // Base EntityManager configuration
         $entity_config = Setup::createAnnotationMetadataConfiguration(
@@ -177,7 +177,7 @@ class Api
             YX_DEV_MODE
         );
         
-        // Database configuration for the EntityManager middleware
+        // Database configuration for the EntityManager
         try {
             // If no driver was declared, halt
             if (getenv('DB_DRIVER') === false) {
@@ -212,7 +212,6 @@ class Api
             header('Content-Type', 'application/json');
             
             // Return response
-            // This is the only time we need to do it like this, I swear
             echo json_encode(new ResponseTemplate(
                 "ERROR",
                 ['error' => $error],

@@ -62,7 +62,7 @@ class DummyController
                 ->withHeader('Content-Type', 'application/json');
         });
         
-        $this->app->get('/dummy/demo', [$this, '']);
+        $this->app->get('/dummy/demo', [$this, 'testMethod']);
     }
     
     /**
