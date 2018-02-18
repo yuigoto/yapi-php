@@ -9,6 +9,12 @@ YX : PHP : YAPI
 
 Basically, all you need to do is create entities and build them controllers. But there are a few things that you might want to do to customize the API's behavior, so here are some instructions.
 
+#### Important (Before you start editing everything here)
+
+On first run, you'll see that a `__salt` file will be generated in the project's root folder. This file contains a unique, and random, security key that's used for signing the JSON Web Token and it's also the security salt for password hashing.
+
+**DO NOT DELETE THIS FILE**, since deleting it in production environment means losing **ALL** user passwords and invalidating of **ALL** existing access tokens. For safety reasons, **TWO** backup copies are created, but **BE CAREFUL** when tinkering with it, ok? :wink:
+
 #### `index.php`
 
 When you first open this file, you'll notice that it only requires the `Api.php` from `src`, runs the `Api` class and uses its `get()` method to retrieve the `\Slim\App` instance and `run()` it.
@@ -30,9 +36,9 @@ The places you might tinker with, in this file are probably the contents in the 
 
 Outside of these methods, there's not much to tinker in this file, which leaves us to the next _most probable file to tinker with_...
 
-#### `src\api\RouterHandler.php`
+#### `src\api\RouteHandler.php`
 
-The `RouterHandler` receives an instance of `\Slim\App` in its constructor and then applies the route callbacks using the controller objects in `src\api\controllers`.
+The `RouteHandler` receives an instance of `\Slim\App` in its constructor and then applies the route callbacks using the controller objects in `src\api\controllers`.
 
 Whenever you build a new controller, it's here that you'll come to properly make use of it.
 

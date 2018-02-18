@@ -178,6 +178,16 @@ class Utilities
         
         // Save salt
         file_put_contents($file, implode("\r\n", $list));
+        
+        // Create backup folder for SALT
+        if (!is_dir(YX_PATH.'/backup')) {
+            // Create folder
+            mkdir(YX_PATH.'/backup');
+            
+            // Save security salt backups
+            file_put_contents(YX_PATH.'/backup/__salt.01', implode("\r\n", $list));
+            file_put_contents(YX_PATH.'/backup/__salt.02', implode("\r\n", $list));
+        }
     }
     
     /**
