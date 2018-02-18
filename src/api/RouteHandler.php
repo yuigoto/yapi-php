@@ -2,13 +2,12 @@
 namespace API;
 
 use API\Controllers\AuthController;
-use API\Controllers\BooksController;
 use API\Controllers\DummyController;
-use \API\Controllers\HealthcheckController;
-use \Psr\Http\Message\ServerRequestInterface as Request;
-use \Psr\Http\Message\ResponseInterface as Response;
-use \Slim\App;
-use \YAPI\Core\ResponseTemplate;
+use API\Controllers\HealthcheckController;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\App;
+use Slim\Http\Response;
+use YAPI\Core\ResponseTemplate;
 
 /**
  * YAPI/SLIM : API\RouteHandler
@@ -57,8 +56,10 @@ class RouteHandler
         // Build response object
         $body = new ResponseTemplate(
             "SUCCESS",
-            [],
-            'YAPI/SLIM @ '.$_SERVER['SERVER_NAME']
+            [
+                'cup_of_tea' => 'c|_|'
+            ],
+            getenv('PROJECT_NAME').' @ '.getenv('PROJECT_ADDR')
         );
         
         $return = $response->withJson(

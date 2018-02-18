@@ -27,7 +27,7 @@ use Doctrine\ORM\Mapping\Table;
 class UserGroup extends BaseEntity
 {
     /**
-     * User group name.
+     * Entity name.
      *
      * @var string
      * @Column(type="string",length=128,unique=true)
@@ -35,7 +35,7 @@ class UserGroup extends BaseEntity
     protected $name;
     
     /**
-     * User group slug.
+     * Entity slug.
      *
      * @var string
      * @Column(type="string",length=128,unique=true)
@@ -43,7 +43,7 @@ class UserGroup extends BaseEntity
     protected $slug;
     
     /**
-     * User group description.
+     * Entity description.
      *
      * @var string
      * @Column(type="string")
@@ -51,18 +51,17 @@ class UserGroup extends BaseEntity
     protected $description;
     
     /**
-     * User group image.
+     * Entity image.
      *
      * @var string
-     * @Column(type="string",length=128)
+     * @Column(type="string",length=128,nullable=true)
      */
     protected $image;
     
     /**
-     * Defines if the group is editable or no.
+     * Defines entity as editable or not editable.
      *
-     * Usually, only the first user group (Administrators) would be
-     * protected.
+     * Usually, only two groups are protected: 'Administrators' and 'Users'.
      *
      * @var bool
      * @Column(type="boolean",nullable=false)
@@ -70,6 +69,8 @@ class UserGroup extends BaseEntity
     protected $protected = true;
     
     /**
+     * Users associated with this group.
+     *
      * @var Collection
      * @ManyToMany(targetEntity="API\Models\Entity\Users\User",mappedBy="groups")
      */
@@ -85,5 +86,143 @@ class UserGroup extends BaseEntity
         
         // Set attributes
         $this->users = new ArrayCollection();
+    }
+    
+    // GETTERS
+    // ------------------------------------------------------------------
+    
+    /**
+     * Returns the name.
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+    
+    /**
+     * Returns the slug.
+     *
+     * @return string
+     */
+    public function getSlug()
+    {
+        return $this->slug;
+    }
+    
+    /**
+     * Returns the description.
+     *
+     * @return string
+     */
+    public function getDescription()
+    {
+        return $this->description;
+    }
+    
+    /**
+     * Returns the image name.
+     *
+     * @return string
+     */
+    public function getImage()
+    {
+        return $this->image;
+    }
+    
+    /**
+     * Returns the protected status.
+     *
+     * @return bool
+     */
+    public function getProtected()
+    {
+        return $this->protected;
+    }
+    
+    /**
+     * Returns the users associated with the group.
+     *
+     * @return ArrayCollection|Collection
+     */
+    public function getUsers()
+    {
+        return $this->users;
+    }
+    
+    // SETTERS
+    // ------------------------------------------------------------------
+    
+    /**
+     * Sets the name.
+     *
+     * @param string $name
+     * @return $this
+     */
+    public function setName(string $name)
+    {
+        $this->name = $name;
+        return $this;
+    }
+    
+    /**
+     * Sets the slug.
+     *
+     * @param string $slug
+     * @return $this
+     */
+    public function setSlug(string $slug)
+    {
+        $this->slug = $slug;
+        return $this;
+    }
+    
+    /**
+     * Sets the description.
+     *
+     * @param string $description
+     * @return $this
+     */
+    public function setDescription(string $description)
+    {
+        $this->description = $description;
+        return $this;
+    }
+    
+    /**
+     * Sets the image name.
+     *
+     * @param string $image
+     * @return $this
+     */
+    public function setImage($image)
+    {
+        $this->image = $image;
+        return $this;
+    }
+    
+    /**
+     * Sets protection status.
+     *
+     * @param bool $protected
+     * @return $this
+     */
+    public function setProtected(bool $protected)
+    {
+        $this->protected = $protected;
+        return $this;
+    }
+    
+    /**
+     * Assigns a user to this group.
+     *
+     * @param User $user
+     * @return $this
+     */
+    public function addUser(User $user)
+    {
+        $this->users[] = $user;
+        return $this;
     }
 }

@@ -159,7 +159,7 @@ class Utilities
                 . '[]~,.;/\\|<>:?^}`{';
         
         // Address variable
-        $addr = $_SERVER['SERVER_NAME'].'|'.$_SERVER['SERVER_ADDR'];
+        $addr = getenv('PROJECT_NAME').'|'.getenv('PROJECT_ADDR');
         
         // Salt headers
         $list[] = md5(sha1($addr)).md5(sha1(date('c')));

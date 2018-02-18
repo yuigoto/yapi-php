@@ -32,7 +32,7 @@ use YAPI\Core\Utilities;
 class User extends BaseEntity
 {
     /**
-     * User login name.
+     * Entity username/login name.
      *
      * @var string
      * @Column(type="string",length=128,unique=true)
@@ -40,7 +40,7 @@ class User extends BaseEntity
     protected $username;
     
     /**
-     * User password.
+     * Entity password.
      *
      * @var string
      * @Column(type="string",length=64)
@@ -48,7 +48,7 @@ class User extends BaseEntity
     protected $password;
     
     /**
-     * User e-mail address.
+     * Entity primary e-mail address.
      *
      * @var string
      * @Column(type="string",length=225,unique=true)
@@ -56,7 +56,7 @@ class User extends BaseEntity
     protected $email;
     
     /**
-     * Attributes assigned to this user.
+     * Entity attributes.
      *
      * @var Collection
      * @OneToMany(targetEntity="API\Models\Entity\Users\UserAttribute",mappedBy="user")
@@ -64,7 +64,7 @@ class User extends BaseEntity
     protected $attributes;
     
     /**
-     * User role associated with this user.
+     * Entity role.
      *
      * @var UserRole
      * @ManyToOne(targetEntity="API\Models\Entity\Users\UserRole",inversedBy="users")
@@ -73,6 +73,8 @@ class User extends BaseEntity
     protected $role;
     
     /**
+     * Groups this entity is associated with.
+     *
      * @var Collection
      * @ManyToMany(targetEntity="API\Models\Entity\Users\UserGroup",inversedBy="users")
      * @JoinTable(name="user_group_list")
@@ -80,8 +82,10 @@ class User extends BaseEntity
     protected $groups;
     
     /**
+     * Old ID associated with this entity (from migration).
+     *
      * @var int
-     * @Column(type="integer")
+     * @Column(type="integer",nullable=true)
      */
     protected $old_id;
     
@@ -97,6 +101,9 @@ class User extends BaseEntity
         $this->attributes = new ArrayCollection();
         $this->groups = new ArrayCollection();
     }
+    
+    // GETTERS
+    // ------------------------------------------------------------------
     
     /**
      * Returns the username.
@@ -129,7 +136,7 @@ class User extends BaseEntity
     }
     
     /**
-     * Returns the old database ID for this user.
+     * Returns the old database ID for a migrated user.
      *
      * @return int
      */
@@ -164,15 +171,20 @@ class User extends BaseEntity
     /**
      * Returns the user's attributes.
      *
-     * @return Collection
+     * @return ArrayCollection|Collection
      */
     public function getAttributes()
     {
         return $this->attributes;
     }
     
+    // SETTERS
+    // ------------------------------------------------------------------
+    
     /**
-     * Sets the entity's username, but only works on creation.
+     * Sets the username.
+     *
+     * Works only when inserting a new user.
      *
      * @param string $username
      *      Sets the entity's username
@@ -192,7 +204,7 @@ class User extends BaseEntity
     }
     
     /**
-     * Sets the entity's password.
+     * Sets the password.
      *
      * @param string $password
      *      New entity password
@@ -207,7 +219,7 @@ class User extends BaseEntity
     }
     
     /**
-     * Sets the entity's e-mail address.
+     * Sets the e-mail address.
      *
      * @param string $email
      *      New e-mail address
@@ -222,7 +234,43 @@ class User extends BaseEntity
     }
     
     /**
-     * Sets the old database ID for this user.
+     * Sets the user role.
+     *
+     * @param UserRole $role
+     * @return $this
+     */
+    public function setRole(UserRole $role) 
+    {
+        $this->role = $role;
+        return $this;
+    }
+    
+    /**
+     * Adds an attribute.
+     *
+     * @param UserAttribute $attr
+     *      New attribute
+     * @return $this
+     */
+    public function addAttribute(UserAttribute $attr) 
+    {
+        $this->attributes[] = $attr;
+        return $this;
+    }
+    
+    /**
+     * Assigns this user to a group.
+     *
+     * @param UserGroup $group
+     * @return $this
+     */
+    public function addGroup(UserGroup $group)
+    {
+        $this->groups[] = $group;
+    }
+    
+    /**
+     * Sets the old database ID.
      *
      * @param int $old_id
      *      Old ID

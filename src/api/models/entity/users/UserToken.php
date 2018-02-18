@@ -26,29 +26,40 @@ use Doctrine\ORM\Mapping\Table;
 class UserToken extends BaseEntity
 {
     /**
+     * Token payload.
+     *
      * @var string
      * @Column(type="text",nullable=false)
      */
     protected $token;
     
     /**
+     * Expiration date as a UNIX timestamp.
+     *
      * @var int
      * @Column(type="integer",nullable=false)
      */
     protected $expires;
     
     /**
+     * Validity status.
+     *
      * @var boolean
      * @Column(type="boolean",nullable=false)
      */
     protected $is_valid = true;
     
     /**
+     * User this token's assigned to.
+     *
      * @var User
      * @ManyToOne(targetEntity="API\Models\Entity\Users\User")
      * @JoinColumn(name="user_id",referencedColumnName="id")
      */
     protected $user;
+    
+    // GETTERS
+    // ------------------------------------------------------------------
     
     /**
      * Returns the JWT token, encoded.
@@ -90,8 +101,11 @@ class UserToken extends BaseEntity
         return $this->user;
     }
     
+    // SETTERS
+    // ------------------------------------------------------------------
+    
     /**
-     * Sets the user token data.
+     * Sets the token.
      *
      * @param string $token
      * @return $this
@@ -103,7 +117,7 @@ class UserToken extends BaseEntity
     }
     
     /**
-     * Sets expiration date for this token.
+     * Sets expiration date.
      *
      * @param int $expires
      * @return $this
@@ -115,7 +129,7 @@ class UserToken extends BaseEntity
     }
     
     /**
-     * Sets validity of this token.
+     * Sets validity.
      *
      * @param bool $valid
      * @return $this
@@ -127,7 +141,7 @@ class UserToken extends BaseEntity
     }
     
     /**
-     * Assigns a user account to this token.
+     * Assigns a user to this token.
      *
      * @param User $user
      * @return $this

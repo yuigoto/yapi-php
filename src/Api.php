@@ -1,18 +1,18 @@
 <?php
-use \API\RouteHandler;
-use \Doctrine\ORM\EntityManager;
-use \Doctrine\ORM\Tools\Setup;
-use \Monolog\Logger;
-use \Monolog\Handler\StreamHandler;
-use \Monolog\Handler\FingersCrossedHandler;
-use \Psr\Http\Message\ServerRequestInterface as Request;
-use \Psr\Http\Message\ResponseInterface as Response;
-use \Psr7Middlewares\Middleware\TrailingSlash;
-use \Slim\App;
-use \Slim\Container;
-use \YAPI\Core\ResponseTemplate;
-use \YAPI\Core\ResponseError;
-use \YAPI\Core\Utilities;
+use API\RouteHandler;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Tools\Setup;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+use Monolog\Handler\FingersCrossedHandler;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr7Middlewares\Middleware\TrailingSlash;
+use Slim\App;
+use Slim\Container;
+use Slim\Http\Response;
+use YAPI\Core\ResponseTemplate;
+use YAPI\Core\ResponseError;
+use YAPI\Core\Utilities;
 
 /**
  * YAPI/SLIM : Api
@@ -123,21 +123,21 @@ class Api
         $app->add(new \Slim\Middleware\JwtAuthentication([
             "secure"        => false,
             "secret"        => Utilities::securitySaltRetrieve(),
-            "path"          => ["/api/v1"],
+            "path"          => ["/api"],
             "passthrough"   => [
-                "/api/v1/auth",
-                "/api/v1/healthcheck",
-                "/api/v1/bootstrap"
+                "/api/auth",
+                "/api/healthcheck",
+                "/api/bootstrap"
             ],
             "regexp"        => "/(.*)/",
             "header"        => "X-Token",
             "realm"         => "Protected",
             // Success callback
-            "callback"      => function ($request, $response, $args) use ($container) {
+            "callback"      => function (Request $request, Response $response, $args) use ($container) {
                 $container['jwt'] = $args['decoded'];
             },
             // Error callback
-            "error"         => function ($requesr, $response, $args) {
+            "error"         => function (Request $request, Response $response, $args) {
                 // Create new error
                 $error = new ResponseError(
                     401,
@@ -196,7 +196,8 @@ class Api
                     'user'      => getenv('DB_USERNAME'),
                     'password'  => getenv('DB_PASSWORD'),
                     'host'      => getenv('DB_HOSTNAME'),
-                    'dbname'    => getenv('DB_DATABASE')
+                    'dbname'    => getenv('DB_DATABASE'),
+                    'charset'   => 'utf8mb4'
                 ];
             }
         } catch (Exception $e) {
@@ -287,7 +288,6 @@ class Api
         // ------------------------------------------------------------
         $container['notFoundHandler'] = function ($c) {
             return function (Request $request, Response $response) use ($c) {
-                // Log error
                 $logger = $c['logger'];
                 $logger->info(
                     'User @ '.$_SERVER['REMOTE_ADDR']. ' reached a 404',
@@ -358,7 +358,7 @@ class Api
                     "Method Not Allowed"
                 );
                 
-                return $c['response']
+                return $response
                     ->withStatus(405)
                     ->withHeader('Allow', $methods)
                     ->withHeader('Content-Type', 'application/json')

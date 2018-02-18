@@ -2,8 +2,8 @@
 namespace API\Controllers;
 
 use Psr\Http\Message\ServerRequestInterface as Request;
-use Psr\Http\Message\ResponseInterface as Response;
 use Slim\App;
+use Slim\Http\Response;
 use YAPI\Core\ResponseTemplate;
 
 /**

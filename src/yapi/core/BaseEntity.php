@@ -71,7 +71,7 @@ class BaseEntity implements \JsonSerializable
     }
     
     /**
-     * Returns the entity's ID.
+     * Returns the ID.
      *
      * @return int
      */
@@ -81,7 +81,7 @@ class BaseEntity implements \JsonSerializable
     }
     
     /**
-     * Returns the entity's Unique ID.
+     * Returns the Unique ID.
      *
      * @return string
      */
@@ -91,7 +91,7 @@ class BaseEntity implements \JsonSerializable
     }
     
     /**
-     * Returns the entity's creation date.
+     * Returns the creation date.
      *
      * @return string
      */
@@ -101,7 +101,7 @@ class BaseEntity implements \JsonSerializable
     }
     
     /**
-     * Returns the entity's update date.
+     * Returns the update date.
      *
      * @return string
      */
@@ -111,7 +111,7 @@ class BaseEntity implements \JsonSerializable
     }
     
     /**
-     * Returns the current "soft delete" status.
+     * Returns the "soft delete" status.
      *
      * @return bool
      */
@@ -121,7 +121,7 @@ class BaseEntity implements \JsonSerializable
     }
     
     /**
-     * Returns an array with all the object's values.
+     * Returns an array with all the values.
      *
      * @return array
      */

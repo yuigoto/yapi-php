@@ -2,11 +2,12 @@
 namespace API\Models\Entity\Users;
 
 use YAPI\Core\BaseEntity;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
-use Doctrine\ORM\Mapping\OneToMany;
+use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\Table;
 
 /**
@@ -26,7 +27,7 @@ use Doctrine\ORM\Mapping\Table;
 class UserPermission extends BaseEntity
 {
     /**
-     * Permission name.
+     * Entity name.
      *
      * @var string
      * @Column(type="string",length=128,unique=true)
@@ -34,7 +35,7 @@ class UserPermission extends BaseEntity
     protected $name;
     
     /**
-     * Permission slug.
+     * Entity slug.
      *
      * @var string
      * @Column(type="string",length=128,unique=true)
@@ -42,10 +43,10 @@ class UserPermission extends BaseEntity
     protected $slug;
     
     /**
-     * Roles that have this permission associated with.
+     * Roles associated with this permission.
      *
      * @var Collection
-     * @OneToMany(targetEntity="API\Models\Entity\Users\UserRolePermission",mappedBy="permissions")
+     * @ManyToMany(targetEntity="API\Models\Entity\Users\UserRole",mappedBy="permissions")
      */
     protected $roles;
     
@@ -59,5 +60,88 @@ class UserPermission extends BaseEntity
         
         // Set attributes
         $this->roles = new ArrayCollection();
+    }
+    
+    // GETTERS
+    // ------------------------------------------------------------------
+    
+    /**
+     * Returns the name.
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+    
+    /**
+     * Returns the slug.
+     *
+     * @return string
+     */
+    public function getSlug()
+    {
+        return $this->slug;
+    }
+    
+    /**
+     * Returns roles associated with the permission.
+     *
+     * @param bool $slug_only
+     *      If true, returns only the roles' slug
+     * @return array
+     */
+    public function getRoles($slug_only = false)
+    {
+        $list = array();
+        foreach ($this->roles as $role) {
+            if (true === $slug_only) {
+                $list[] = $role->getSlug();
+            } else {
+                $list[] = json_decode(json_encode($role), true);
+            }
+        }
+        return $list;
+    }
+    
+    // SETTERS
+    // ------------------------------------------------------------------
+
+    /**
+     * Sets the name.
+     * 
+     * @param string $name
+     * @return $this
+     */
+    public function setName(string $name)
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+    /**
+     * Sets the slug.
+     * 
+     * @param string $slug
+     * @return $this
+     */
+    public function setSlug(string $slug)
+    {
+        $this->slug = $slug;
+        return $this;
+    }
+    
+    /**
+     * Assigns a permission to this role.
+     *
+     * @param UserRole $role
+     *      UserRole this permission will be assigned to
+     * @return $this
+     */
+    public function setRole(UserRole $role)
+    {
+        $this->roles[] = $role;
+        return $this;
     }
 }

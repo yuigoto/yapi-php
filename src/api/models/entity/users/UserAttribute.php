@@ -29,21 +29,111 @@ use Doctrine\ORM\Mapping\Table;
 class UserAttribute extends BaseEntity
 {
     /**
+     * Entity name.
+     *
      * @var string
      * @Column(type="string",length=128,nullable=false)
      */
     protected $name;
     
     /**
+     * Entity value.
+     *
      * @var string
      * @Column(type="string",length=4096)
      */
     protected $value;
     
     /**
+     * User this entity is assigned to.
+     *
      * @var User
      * @ManyToOne(targetEntity="API\Models\Entity\Users\User",inversedBy="attributes")
      * @JoinColumn(name="user_id",referencedColumnName="id")
      */
     protected $user;
+    
+    // GETTERS
+    // ------------------------------------------------------------------
+    
+    /**
+     * Returns the name.
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+    
+    /**
+     * Returns the value.
+     *
+     * @return string
+     */
+    public function getValue() 
+    {
+        return $this->value;
+    }
+    
+    /**
+     * Returns the attribute as a [name => value] array.
+     *
+     * @return array
+     */
+    public function getAttribute()
+    {
+        return [
+            $this->name => $this->value
+        ];
+    }
+    
+    /**
+     * Gets the user assigned to this attribute.
+     *
+     * @return User
+     */
+    public function getUser() 
+    {
+        return $this->user;
+    }
+    
+    // SETTERS
+    // ------------------------------------------------------------------
+
+    /**
+     * Sets the name.
+     *
+     * @param string $name
+     * @return $this
+     */
+    public function setName(string $name)
+    {
+        $this->name = $name;
+        return $this;
+    }
+    
+    /**
+     * Sets the value.
+     * 
+     * @param string $value
+     * @return $this
+     */
+    public function setValue(string $value)
+    {
+        $this->value = $value;
+        return $this;
+    }
+    
+    /**
+     * Assigns a user to this attribute.
+     *
+     * @param User $user
+     * @return $this
+     */
+    public function setUser(User $user)
+    {
+        $this->user = $user;
+        return $this;
+    }
 }
