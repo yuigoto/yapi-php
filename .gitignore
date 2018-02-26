@@ -3,6 +3,7 @@
 .idea/
 .vscode/
 backup/
+data/
 logs/
 review/
 vendor/
@@ -12,4 +13,6 @@ vendor/
 *.sqlite
 *.sql
 .env
-__salt
+__SALT
+__SALT.001
+__SALT.002

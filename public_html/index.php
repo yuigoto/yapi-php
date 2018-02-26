@@ -1,19 +1,16 @@
 <?php
-/**
- * YAPI/SLIM : Index
- * ----------------------------------------------------------------------
- * Index file.
- *
- * @author      Fabio Y. Goto <lab@yuiti.com.br>
- * @copyright   2018 Fabio Y. Goto
- * @since       0.0.1
- */
+use API\Api;
 
-// Require Composer autoload
 require_once '../vendor/autoload.php';
 
-// Fire Application
-$app = (new Api())->get();
-
-// Run!
+/**
+ * YAPI : Index
+ * ----------------------------------------------------------------------
+ * Requires autoload, fires API, runs it, period.
+ * 
+ * @author      Fabio Y. Goto <lab@yuiti.com.br>
+ * @copyright   2018 Fabio Y. Goto
+ * @since       0.0.2
+ */
+$app = (new Api())->getApp();
 $app->run();

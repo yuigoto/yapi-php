@@ -1,0 +1,90 @@
+[
+  {
+    "slug": "Super Admin",
+    "name": "Super Administrator"
+  },
+  {
+    "slug": "Administrator",
+    "name": "Administrator"
+  },
+  {
+    "slug": "User Manage",
+    "name": "Manage Users"
+  },
+  {
+    "slug": "User Create",
+    "name": "Create Users"
+  },
+  {
+    "slug": "User Edit",
+    "name": "Edit Users"
+  },
+  {
+    "slug": "User Delete",
+    "name": "Delete Users"
+  },
+  {
+    "slug": "User Browse",
+    "name": "Browse Users"
+  },
+  {
+    "slug": "Group Manage",
+    "name": "Manage Groups"
+  },
+  {
+    "slug": "Group Create",
+    "name": "Create Groups"
+  },
+  {
+    "slug": "Group Edit",
+    "name": "Edit Groups"
+  },
+  {
+    "slug": "Group Delete",
+    "name": "Delete Groups"
+  },
+  {
+    "slug": "Group Browse",
+    "name": "Browse Groups"
+  },
+  {
+    "slug": "Content Manage",
+    "name": "Manage Contents"
+  },
+  {
+    "slug": "Content Create",
+    "name": "Create Contents"
+  },
+  {
+    "slug": "Content Edit",
+    "name": "Edit Contents"
+  },
+  {
+    "slug": "Content Delete",
+    "name": "Delete Contents"
+  },
+  {
+    "slug": "Content Browse",
+    "name": "Browse Contents"
+  },
+  {
+    "slug": "Article Manage",
+    "name": "Manage Articles"
+  },
+  {
+    "slug": "Article Publish",
+    "name": "Publish Articles"
+  },
+  {
+    "slug": "Article Edit",
+    "name": "Edit Articles"
+  },
+  {
+    "slug": "Article Delete",
+    "name": "Delete Articles"
+  },
+  {
+    "slug": "Article Browse",
+    "name": "Browse Articles"
+  }
+]

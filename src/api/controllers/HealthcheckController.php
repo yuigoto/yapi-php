@@ -1,62 +1,68 @@
 <?php
 namespace API\Controllers;
 
+use API\Api;
+use API\Core\ResponseTemplate;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 use Slim\Http\Response;
-use YAPI\Core\ResponseTemplate;
 
 /**
- * YAPI/SLIM : API\Controllers\HealthcheckController
+ * YAPI : API\Controllers\HealthcheckController
  * ----------------------------------------------------------------------
- * Handles the '/healthcheck' api endpoint and everything beneath it.
- *
+ * Handles a simple healthcheck, to see if things are running a bit.
+ * 
  * @package     API\Controllers
  * @author      Fabio Y. Goto <lab@yuiti.com.br>
  * @copyright   2018 Fabio Y. Goto
- * @since       0.0.1
+ * @since       0.0.2
  */
-class HealthcheckController
+class HealthcheckController 
 {
     /**
      * HealthcheckController constructor.
      *
      * @param App $app
-     *      Slim application instance
      */
     public function __construct(App &$app)
     {
-        // Define healthcheck route
+        // Define healthcheck
         $app->any('/healthcheck', [$this, 'healthcheck']);
     }
 
     /**
-     * Handles the base healthcheck endpoint.
+     * Handles the `/healthcheck` endpoint.
      *
      * @param Request $request
      * @param Response $response
      * @param array $args
      * @return mixed
      */
-    public function healthcheck(Request $request, Response $response, $args)
-    {
-        // Build response object
+    public function healthcheck(
+        Request $request, 
+        Response $response, 
+        array $args
+    ) {
+        // Build response body
         $body = new ResponseTemplate(
-            "SUCCESS",
+            200,
             [
-                'name'      => 'YAPI (Yuiti\'s API)',
-                'author'    => 'Fabio Y. Goto <lab@yuiti.com.br>',
-                'version'   => '0.0.1',
-                'license'   => 'MIT',
-                'copyright' => '©2018 Fabio Y. Goto'
-            ],
-            'Hello, World!'
+                'info' => [
+                    'name'      => Api::API_NAME.' @ '.$_SERVER['SERVER_ADDR'], 
+                    'author'    => Api::API_AUTHOR, 
+                    'version'   => Api::API_VERSION, 
+                    'license'   => Api::API_LICENSE, 
+                    'copyright' => Api::API_RIGHTS
+                ], 
+                'message' => 'Hello, World!'
+            ], 
+            true
         );
-        
-        // Set JSON response
+
+        // Set response
         $return = $response
-            ->withJson($body, 200)
-            ->withHeader('Content-Type', 'application/json');
+            ->withHeader('Content-Type', 'application/json')
+            ->withJson($body, 200);
         return $return;
     }
 }

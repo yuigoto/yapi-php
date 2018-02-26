@@ -1,7 +1,8 @@
 <?php
 namespace API\Models\Entity\Users;
 
-use YAPI\Core\BaseEntity;
+use API\Core\BaseEntity;
+use API\Core\Salt;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
@@ -13,243 +14,310 @@ use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
-use YAPI\Core\Utilities;
 
 /**
- * YAPI/SLIM : API\Models\Entity\Users\User
+ * YAPI : API\Models\Entity\Users\User
  * ----------------------------------------------------------------------
  * User entity.
- *
+ * 
  * @package     API\Models\Entity\Users
  * @author      Fabio Y. Goto <lab@yuiti.com.br>
  * @copyright   2018 Fabio Y. Goto
- * @since       0.0.1
- *
+ * @since       0.0.2
+ * 
  * @Entity
  * @Table(name="user")
- * @HasLifecycleCallbacks
+ * @HasLifeCycleCallbacks
  */
-class User extends BaseEntity
+class User extends BaseEntity 
 {
+    // Properties
+    // ------------------------------------------------------------------
+
     /**
-     * Entity username/login name.
+     * Username/login name.
      *
      * @var string
      * @Column(type="string",length=128,unique=true)
      */
     protected $username;
-    
+
     /**
-     * Entity password.
+     * Hashed password
      *
      * @var string
-     * @Column(type="string",length=64)
+     * @Column(type="string",length=128)
      */
     protected $password;
-    
+
     /**
-     * Entity primary e-mail address.
+     * E-mail address.
      *
      * @var string
-     * @Column(type="string",length=225,unique=true)
+     * @Column(type="string",length=255,unique=true)
      */
     protected $email;
-    
+
     /**
-     * Entity attributes.
+     * Old database ID.
+     *
+     * @var int
+     * @Column(type="integer",nullable=true)
+     */
+    protected $old_id;
+
+    // Relationships
+    // ------------------------------------------------------------------
+
+    /**
+     * Attributes assigned to this user.
      *
      * @var Collection
      * @OneToMany(targetEntity="API\Models\Entity\Users\UserAttribute",mappedBy="user")
      */
     protected $attributes;
-    
+
     /**
-     * Entity role.
+     * Groups related to this entity.
+     *
+     * @var Collection
+     * @ManyToMany(targetEntity="API\Models\Entity\Users\UserGroup",inversedBy="users")
+     * @JoinTable(
+     *      name="user_groups_list", 
+     *      joinColumns={
+     *          @JoinColumn(name="user_id",referencedColumnName="id")
+     *      }, 
+     *      inverseJoinColumns={
+     *          @JoinColumn(name="group_id",referencedColumnName="id")
+     *      }
+     * )
+     */
+    protected $groups;
+
+    /**
+     * User role.
      *
      * @var UserRole
      * @ManyToOne(targetEntity="API\Models\Entity\Users\UserRole",inversedBy="users")
      * @JoinColumn(name="role_id",referencedColumnName="id")
      */
     protected $role;
-    
-    /**
-     * Groups this entity is associated with.
-     *
-     * @var Collection
-     * @ManyToMany(targetEntity="API\Models\Entity\Users\UserGroup",inversedBy="users")
-     * @JoinTable(name="user_group_list")
-     */
-    protected $groups;
-    
-    /**
-     * Old ID associated with this entity (from migration).
-     *
-     * @var int
-     * @Column(type="integer",nullable=true)
-     */
-    protected $old_id;
-    
+
+    // Constructor
+    // ------------------------------------------------------------------
+
     /**
      * User constructor.
      */
-    public function __construct()
+    public function __construct() 
     {
-        // Parent constructor
-        parent::__construct();
-        
-        // Set attributes
+        // Set collections
         $this->attributes = new ArrayCollection();
         $this->groups = new ArrayCollection();
     }
     
-    // GETTERS
+    // Getters
     // ------------------------------------------------------------------
-    
+
     /**
-     * Returns the username.
+     * Retrieves the username.
      *
      * @return string
      */
-    public function getUsername()
+    public function getUsername(): string 
     {
         return $this->username;
     }
     
     /**
-     * Returns the password (use it for comparison with an encoded one).
+     * Retrieves the hashed password.
      *
      * @return string
      */
-    public function getPassword()
+    public function getPassword(): string 
     {
         return $this->password;
     }
-    
+
     /**
-     * Returns the e-mail.
+     * Retrieves the e-mail address.
      *
      * @return string
      */
-    public function getEmail()
+    public function getEmail(): string 
     {
         return $this->email;
     }
-    
+
     /**
-     * Returns the old database ID for a migrated user.
+     * Retrieves the old database ID.
      *
-     * @return int
+     * @return string
      */
-    public function getOldId()
+    public function getOldId(): int 
     {
         return $this->old_id;
     }
-    
+
     /**
-     * Returns a payload to send to the tokenizer.
+     * Returns a collection of related attributes.
      *
-     * @return array
+     * @return Collection
      */
-    public function getTokenPayload()
-    {
-        // Build payload
-        $payload = [
-            'username'      => $this->username,
-            'email'         => $this->email,
-            'created_at'    => $this->created_at,
-            'updated_at'    => $this->updated_at,
-            'role'          => $this->role->getValues(),
-            'groups'        => $this->groups,
-            'is_deleted'    => $this->deleted,
-            'is_public'     => false,
-            'display_name'  => null,
-            'uuid'          => $this->uuid
-        ];
-        return $payload;
-    }
-    
-    /**
-     * Returns the user's attributes.
-     *
-     * @return ArrayCollection|Collection
-     */
-    public function getAttributes()
+    public function getAttributes(): Collection
     {
         return $this->attributes;
     }
-    
-    // SETTERS
-    // ------------------------------------------------------------------
-    
+
     /**
-     * Sets the username.
+     * Returns a collection of related groups.
      *
-     * Works only when inserting a new user.
+     * @return Collection
+     */
+    public function getGroups(): Collection 
+    {
+        return $this->groups;
+    }
+
+    /**
+     * Returns the user role.
      *
-     * @param string $username
-     *      Sets the entity's username
+     * @return UserRole
+     */
+    public function getRole(): UserRole 
+    {
+        return $this->role;
+    }
+
+    /**
+     * Returns all data for this user as an associative array, for use 
+     * with JSON Web Token payloads.
+     *
+     * @return array
+     */
+    public function getTokenPayload(): array 
+    {
+        $data = $this->toArray();
+        
+        // Fetch all attributes
+        $attr = [];
+        foreach ($data['attributes'] as $attribute) {
+            $attr[$attribute->getName()] = $attribute->getValue();
+        }
+
+        // Fetch all groups basic data
+        $groups = [];
+        foreach ($data['groups'] as $group) {
+            $groups[] = [
+                'id' => $group->getId(), 
+                'name' => $group->getName(), 
+                'slug' => $group->getSlug()
+            ];
+        }
+
+        // Fetch role and permissions
+        $role = [
+            'name' => $data['role']->getName(), 
+            'slug' => $data['role']->getSlug(), 
+            'permissions' => []
+        ];
+        foreach ($this->role->getPermissions() as $permission) {
+            $role['permissions'][] = $permission->getSlug();
+        }
+
+        // Replace all attributes
+        $data['attributes'] = $attr;
+        $data['groups'] = $groups;
+        $data['role'] = $role;
+
+        // DO NOT RETURN PASSWORD
+        unset($data['password']);
+
+        return $data;
+    }
+    
+    // Setters
+    // ------------------------------------------------------------------
+
+    /**
+     * Sets the username, when trying to set up a new username for a user 
+     * that's already registered, throws an error.
+     *
+     * @param string $username 
      * @return $this
      * @throws \Exception
      */
-    public function setUsername(string $username)
+    public function setUsername(string $username) 
     {
-        if ($this->username !== null && $this->username !== "") {
-            throw new \Exception(
-                'Username cannot be changed',
-                412
-            );
+        if ($this->username !== null && $this->username !== '') {
+            throw new \Exception('Username cannot be changed', 412);
         }
         $this->username = $username;
         return $this;
     }
-    
+
     /**
-     * Sets the password.
+     * Updates the password only if not empty.
      *
      * @param string $password
-     *      New entity password
      * @return $this
      */
-    public function setPassword(string $password = '')
+    public function setPassword(string $password) 
     {
         if (trim($password) !== '') {
-            $this->password = Utilities::passwordHash($password);
+            $this->password = \password_hash(
+                $password, 
+                PASSWORD_DEFAULT
+            ).'.'.Salt::get();
         }
         return $this;
     }
-    
+
     /**
-     * Sets the e-mail address.
+     * Updates the e-mail address.
      *
      * @param string $email
-     *      New e-mail address
      * @return $this
      */
-    public function setEmail(string $email)
+    public function setEmail(string $email) 
     {
         if ($email !== '' && is_string($email)) {
             $this->email = $email;
         }
         return $this;
     }
-    
+
     /**
-     * Sets the user role.
+     * Sets the old database ID value.
+     *
+     * @param integer $old_id
+     * @return $this
+     */
+    public function setOldId(int $old_id) 
+    {
+        $this->old_id = $old_id;
+        return $this;
+    }
+
+    /**
+     * Sets the user role associated with the user.
      *
      * @param UserRole $role
-     * @return $this
+     * @return void
      */
     public function setRole(UserRole $role) 
     {
         $this->role = $role;
         return $this;
     }
-    
+
+    // Collection Managers
+    // ------------------------------------------------------------------
+
     /**
-     * Adds an attribute.
+     * Adds an attribute to this user.
      *
      * @param UserAttribute $attr
-     *      New attribute
      * @return $this
      */
     public function addAttribute(UserAttribute $attr) 
@@ -257,28 +325,16 @@ class User extends BaseEntity
         $this->attributes[] = $attr;
         return $this;
     }
-    
+
     /**
-     * Assigns this user to a group.
+     * Associate this user with a group.
      *
      * @param UserGroup $group
      * @return $this
      */
-    public function addGroup(UserGroup $group)
+    public function addGroup(UserGroup $group) 
     {
         $this->groups[] = $group;
-    }
-    
-    /**
-     * Sets the old database ID.
-     *
-     * @param int $old_id
-     *      Old ID
-     * @return $this
-     */
-    public function setOldId(int $old_id)
-    {
-        $this->old_id = $old_id;
         return $this;
     }
 }

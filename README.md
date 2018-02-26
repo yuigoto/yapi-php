@@ -11,17 +11,17 @@ Basically, all you need to do is create entities and build them controllers. But
 
 #### Important (Before you start editing everything here)
 
-On first run, you'll see that a `__salt` file will be generated in the project's root folder. This file contains a unique, and random, security key that's used for signing the JSON Web Token and it's also the security salt for password hashing.
+On its first run, you'll see that a `__SALT` file will be generated in the `data` folder, inside project root. This file contains a unique, and random, security key that's used for signing the JSON Web Token and it's also the security salt for password hashing.
 
 **DO NOT DELETE THIS FILE**, since deleting it in production environment means losing **ALL** user passwords and invalidating of **ALL** existing access tokens. For safety reasons, **TWO** backup copies are created, but **BE CAREFUL** when tinkering with it, ok? :wink:
 
 #### `index.php`
 
-When you first open this file, you'll notice that it only requires the `Api.php` from `src`, runs the `Api` class and uses its `get()` method to retrieve the `\Slim\App` instance and `run()` it.
+When you first open this file, you'll notice that it only requires the `Api.php` from `src\api`, runs the `Api` class and uses its `getApp()` method to retrieve the `\Slim\App` instance and `run()` it.
 
 Well, if you're thinking "but, is that everything?", then YES! That's everything that it needs to do for the purpose of this project. For real, no kidding! (Sorry for this one, next files will be a bit more serious)
 
-#### `src\Api.php`
+#### `src\api\Api.php`
 
 This is probably the file you'll tinker with first when using this project. It basically holds a class that:
 
@@ -38,7 +38,7 @@ Outside of these methods, there's not much to tinker in this file, which leaves 
 
 #### `src\api\RouteHandler.php`
 
-The `RouteHandler` receives an instance of `\Slim\App` in its constructor and then applies the route callbacks using the controller objects in `src\api\controllers`.
+The `RouteHandler` receives a reference to an instance of `\Slim\App` in its constructor and then applies the route callbacks using the controller objects in `src\api\controllers`.
 
 Whenever you build a new controller, it's here that you'll come to properly make use of it.
 
@@ -50,7 +50,7 @@ We'll use `src\api\controllers\DummyController.php` as an example.
 
 Basically, a controller does this:
 
-- Receives the `\Slim\App` instance from the `RouteHandler`;
+- Receives the `\Slim\App` instance reference from the `RouteHandler`;
 - Declares the routes this controller it's related to and then applies its internal public methods a callback for each route used;
     - Callbacks use the _Slim Framework_ callback method, you can see more about these callbacks [here](https://www.slimframework.com/docs/v3/tutorial/first-app.html);
 - Also, the controllers keep a reference to the application and container instances in its `$app` and `$container` properties, in case the methods need to use them;
@@ -63,7 +63,7 @@ The entities in `src\api\models\entity\*` follow _Doctrine's_ entity model. So p
 
 But there are a few things that I do instead of declaring the whole entity here.
 
-You'll see that most (or all) entities extend the `BaseEntity` class located in `src\yapi\core\BaseEntity.php`. The Base Entity is an entity without the `@Entity` and `@Table` annotations, but it does declare some annotated properties and getter/setter methods.
+You'll see that most (or all) entities extend the `BaseEntity` class located in `src\api\core\BaseEntity.php`. The Base Entity is an entity without the `@Entity` and `@Table` annotations, but it does declare some annotated properties and getter/setter methods.
 
 > While you **CAN** declare this inheritable entity as an `@Entity` with a `@Table`, we don't do this so it won't cause problems further when we use Doctrine's _QueryBuilder_ to select entities from the database, as these annotations will cause a bit of a mess in select operations with any extended child by adding some unknown aliases.
 
@@ -76,16 +76,20 @@ The properties the `BaseEntity` define are:
 
 The `uuid`, `created_at` and `updated_at` are created by methods that have `@PrePersist` and `@PreUpdate` annotations. Because of this, **ALL** classes that extend the `BaseEntity` must have the `@HasLifecycleCallbacks` annotation.
 
-#### Other Files of Interest
+#### Other Folders and Files of Interest
 
-The files and instruction above are most of the things you'll have to tinker with when using this project. But there are some other files that you can customize too, which are:
+The files and instruction above are most of the things you'll have to tinker with when using this project. But there are some other things that you can customize or need to be careful with too, which are:
 
-- `src\core\constants.php`: this file is autoloaded by `autoload.php`, and it declares constants used globally;
-- `src\yapi\core\BaseEntity.php`: the base entity, that declares some basic properties for entities which can be inherited;
-- `src\yapi\core\ClientInformation.php`: a simple, plain PHP object that fetches some information from the client requesting information;
-- `src\yapi\core\ResponseError.php`: a simple template for error responses for the API;
-- `src\yapi\core\ResponseTemplate.php`: a simple template for JSON Responses used by the API;
-- `src\yapi\core\Utilities.php`: contains some public static methods used throughout the API, like a password hasher and security salt definitions;
+- `src\data\`: initialized automatically by the project, this folder stores the security salt files, after initialized, so DO NOT delete it if you're in production environment! It also stores the SQLite database, if using the SQLite driver;
+- `src\bootstrap\`: this folder contains the base group, role and permissions JSON data to be initialized by the bootstrap script together with the root user;
+- `src\api\config\constants.php`: this file is autoloaded by `autoload.php`, and it declares constants used globally;
+- `src\api\core\BaseEntity.php`: the base entity, that declares some basic properties for entities which can be inherited;
+- `src\api\core\ClientInformation.php`: a simple, plain PHP object that fetches some information from the client requesting information;
+- `src\api\core\Mappable.php`: multiple classe in the project extend this one, hence it's one of the most important files here. It basically sets and implements methods that allow an instance of a class to be mapped into an associative array with its public/protected properties as keys, and also allows easy/lazy JSON serialization with `json_encode`;
+- `src\api\core\ResponseError.php`: a simple template for error responses for the API;
+- `src\api\core\ResponseTemplate.php`: a simple template for JSON Responses used by the API;
+- `src\api\core\Salt.php`: handles security salt generation and retrieving;
+- `src\api\core\Utilities.php`: contains some public static methods used throughout the API;
 
 And that's basically it! :wink:
 

@@ -1,35 +1,41 @@
 <?php
 namespace API\Models\Entity\Users;
 
-use YAPI\Core\BaseEntity;
+use API\Core\BaseEntity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\JoinColumns;
 use Doctrine\ORM\Mapping\JoinTable;
 use Doctrine\ORM\Mapping\ManyToMany;
+use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
 
 /**
- * YAPI/SLIM : API\Models\Entity\Users\UserRole
+ * YAPI : API\Models\Entity\Users\UserRole
  * ----------------------------------------------------------------------
- * Handles user roles.
- *
+ * UserRole entity.
+ * 
  * @package     API\Models\Entity\Users
  * @author      Fabio Y. Goto <lab@yuiti.com.br>
  * @copyright   2018 Fabio Y. Goto
- * @since       0.0.1
- *
+ * @since       0.0.2
+ * 
  * @Entity
  * @Table(name="user_role")
- * @HasLifecycleCallbacks
+ * @HasLifeCycleCallbacks
  */
-class UserRole extends BaseEntity
+class UserRole extends BaseEntity 
 {
+    // Properties
+    // ------------------------------------------------------------------
+
     /**
-     * Entity name.
+     * Role name.
      *
      * @var string
      * @Column(type="string",length=128,unique=true)
@@ -37,22 +43,41 @@ class UserRole extends BaseEntity
     protected $name;
     
     /**
-     * Entity slug.
+     * Role slug.
      *
      * @var string
      * @Column(type="string",length=128,unique=true)
      */
     protected $slug;
+
+    /**
+     * Role short description (optional).
+     *
+     * @var string
+     * @Column(type="string",length=255,nullable=true)
+     */
+    protected $description;
     
+    // Relationships
+    // ------------------------------------------------------------------
+
     /**
      * Permissions associated with this role.
-     *
+     * 
      * @var Collection
-     * @ManyToMany(targetEntity="API\Models\Entity\Users\UserPermission",inversedBy="roles")
-     * @JoinTable(name="user_role_permission")
+     * @ManyToMany(targetEntity="API\Models\Entity\Users\UserPermission",inversedBy="Roles")
+     * @JoinTable(
+     *      name="user_role_permission", 
+     *      joinColumns={
+     *          @JoinColumn(name="role_id",referencedColumnName="id")
+     *      }, 
+     *      inverseJoinColumns={
+     *          @JoinColumn(name="permission_id",referencedColumnName="id")
+     *      }
+     * )
      */
     protected $permissions;
-    
+
     /**
      * Users associated with this role.
      *
@@ -60,83 +85,73 @@ class UserRole extends BaseEntity
      * @OneToMany(targetEntity="API\Models\Entity\Users\User",mappedBy="role")
      */
     protected $users;
-    
+
+    // Constructor
+    // ------------------------------------------------------------------
+
     /**
      * UserRole constructor.
      */
-    public function __construct()
+    public function __construct() 
     {
-        // Parent constructor
-        parent::__construct();
-        
         // Set collections
         $this->permissions = new ArrayCollection();
         $this->users = new ArrayCollection();
     }
     
-    // GETTERS
+    // Getters
     // ------------------------------------------------------------------
-    
+
     /**
      * Returns the name.
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string 
     {
         return $this->name;
     }
-    
+
     /**
      * Returns the slug.
      *
      * @return string
      */
-    public function getSlug()
+    public function getSlug(): string 
     {
-        return $this->name;
+        return $this->slug;
     }
-    
+
     /**
-     * Returns the permissions associated with this role.
+     * Returns the description.
      *
-     * @param bool $slug_only
-     *      If true, returns only the permissions' slug
-     * @return array
+     * @return string
      */
-    public function getPermissions($slug_only = false)
+    public function getDescription(): string 
     {
-        $list = array();
-        foreach ($this->permissions as $permission) {
-            if (true === $slug_only) {
-                $list[] = $permission->getSlug();
-            } else {
-                $list[] = json_decode(json_encode($permission), true);
-            }
-        }
-        return $list;
+        return $this->description;
     }
-    
+
     /**
-     * Returns the users associated with this role.
+     * Returns a collection of permissions associated with this role.
      *
-     * @return ArrayCollection|Collection
+     * @return Collection
      */
-    public function getUsers()
+    public function getPermissions(): Collection 
     {
-        return $this->users;
+        return $this->permissions;
     }
-    
-    // SETTERS
+
+    // Setters
     // ------------------------------------------------------------------
 
     /**
      * Sets the name.
-     * 
-     * @param string $name
+     *
+     * @param string $name 
      * @return $this
      */
-    public function setName(string $name)
+    public function setName(string $name) 
     {
         $this->name = $name;
         return $this;
@@ -144,24 +159,38 @@ class UserRole extends BaseEntity
 
     /**
      * Sets the slug.
-     * 
-     * @param string $slug
+     *
+     * @param string $slug 
      * @return $this
      */
-    public function setSlug(string $slug)
+    public function setSlug(string $slug) 
     {
         $this->slug = $slug;
         return $this;
     }
-    
+
     /**
-     * Assigns a permission to the role.
+     * Defines the description.
      *
-     * @param UserPermission $permission
-     *      UserPermission to assign to this role
+     * @param string $description 
      * @return $this
      */
-    public function addPermission(UserPermission $permission)
+    public function setDescription(string $description) 
+    {
+        $this->description = $description;
+        return $this;
+    }
+
+    // Collection Managers
+    // ------------------------------------------------------------------
+
+    /**
+     * Adds a permission to this user role.
+     *
+     * @param UserPermission $permission
+     * @return $this
+     */
+    public function addPermission(UserPermission $permission) 
     {
         $this->permissions[] = $permission;
         return $this;

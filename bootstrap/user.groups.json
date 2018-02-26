@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Administrators",
+    "slug": "Administrators",
+    "description": "System administrators group.",
+    "image": null,
+    "protected": true
+  },
+  {
+    "name": "Managers",
+    "slug": "Managers",
+    "description": "System managers group.",
+    "image": null,
+    "protected": true
+  },
+  {
+    "name": "Users",
+    "slug": "Users",
+    "description": "Users group.",
+    "image": null,
+    "protected": true
+  }
+]

@@ -1,33 +1,40 @@
 <?php
 namespace API\Models\Entity\Users;
 
-use YAPI\Core\BaseEntity;
+use API\Core\BaseEntity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\JoinTable;
 use Doctrine\ORM\Mapping\ManyToMany;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
 
 /**
- * YAPI/SLIM : API\Models\Entity\Users\UserPermission
+ * YAPI : API\Models\Entity\Users\UserPermission
  * ----------------------------------------------------------------------
- * Handles individual user permission names.
- *
+ * UserPermission entity.
+ * 
  * @package     API\Models\Entity\Users
  * @author      Fabio Y. Goto <lab@yuiti.com.br>
  * @copyright   2018 Fabio Y. Goto
- * @since       0.0.1
- *
+ * @since       0.0.2
+ * 
  * @Entity
  * @Table(name="user_permission")
- * @HasLifecycleCallbacks
+ * @HasLifeCycleCallbacks
  */
-class UserPermission extends BaseEntity
+class UserPermission extends BaseEntity 
 {
+    // Properties
+    // ------------------------------------------------------------------
+
     /**
-     * Entity name.
+     * Permission name.
      *
      * @var string
      * @Column(type="string",length=128,unique=true)
@@ -35,13 +42,16 @@ class UserPermission extends BaseEntity
     protected $name;
     
     /**
-     * Entity slug.
+     * Permission slug.
      *
      * @var string
      * @Column(type="string",length=128,unique=true)
      */
     protected $slug;
     
+    // Relationships
+    // ------------------------------------------------------------------
+
     /**
      * Roles associated with this permission.
      *
@@ -49,72 +59,62 @@ class UserPermission extends BaseEntity
      * @ManyToMany(targetEntity="API\Models\Entity\Users\UserRole",mappedBy="permissions")
      */
     protected $roles;
-    
+
+    // Constructor
+    // ------------------------------------------------------------------
+
     /**
-     * UserPermission constructor.
+     * UserRole constructor.
      */
-    public function __construct()
+    public function __construct() 
     {
-        // Parent constructor
-        parent::__construct();
-        
-        // Set attributes
+        // Set collections
         $this->roles = new ArrayCollection();
     }
     
-    // GETTERS
+    // Getters
     // ------------------------------------------------------------------
-    
+
     /**
      * Returns the name.
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string 
     {
         return $this->name;
     }
-    
+
     /**
      * Returns the slug.
      *
      * @return string
      */
-    public function getSlug()
+    public function getSlug(): string 
     {
         return $this->slug;
     }
     
     /**
-     * Returns roles associated with the permission.
+     * Returns the collection of roles associated with this permission.
      *
-     * @param bool $slug_only
-     *      If true, returns only the roles' slug
-     * @return array
+     * @return Collection
      */
-    public function getRoles($slug_only = false)
+    public function getRoles(): Collection
     {
-        $list = array();
-        foreach ($this->roles as $role) {
-            if (true === $slug_only) {
-                $list[] = $role->getSlug();
-            } else {
-                $list[] = json_decode(json_encode($role), true);
-            }
-        }
-        return $list;
+        return $this->roles;
     }
-    
-    // SETTERS
+
+    // Setters
     // ------------------------------------------------------------------
 
     /**
      * Sets the name.
-     * 
-     * @param string $name
+     *
+     * @param string $name 
      * @return $this
      */
-    public function setName(string $name)
+    public function setName(string $name) 
     {
         $this->name = $name;
         return $this;
@@ -122,24 +122,26 @@ class UserPermission extends BaseEntity
 
     /**
      * Sets the slug.
-     * 
-     * @param string $slug
+     *
+     * @param string $slug 
      * @return $this
      */
-    public function setSlug(string $slug)
+    public function setSlug(string $slug) 
     {
         $this->slug = $slug;
         return $this;
     }
-    
+
+    // Collection Managers
+    // ------------------------------------------------------------------
+
     /**
-     * Assigns a permission to this role.
+     * Associates a role with this permission.
      *
      * @param UserRole $role
-     *      UserRole this permission will be assigned to
      * @return $this
      */
-    public function setRole(UserRole $role)
+    public function addRole(UserRole $role) 
     {
         $this->roles[] = $role;
         return $this;

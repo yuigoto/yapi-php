@@ -1,21 +1,23 @@
 <?php
+use API\Api;
+use Doctrine\ORM\Tools\Console\ConsoleRunner;
+
 /**
- * YAPI/SLIM : CLI Config (Doctrine)
+ * YAPI : CLI Config (Doctrine)
  * ----------------------------------------------------------------------
- * CLI configuration file for Doctrine's Entity Builder.
- *
+ * Used by Doctrine's Entity Builder.
+ * 
  * @author      Fabio Y. Goto <lab@yuiti.com.br>
  * @copyright   2018 Fabio Y. Goto
- * @since       0.0.1
+ * @since       0.0.2
  */
-// Require Composer Autoloader
 require_once 'vendor/autoload.php';
 
-// Fire up application and get the container
+// Fire application and get container
 $container = (new Api())->getContainer();
 
-// Set entityManager
+// Get entity manager
 $em = $container->get('em');
 
 // Return helper set
-return \Doctrine\ORM\Tools\Console\ConsoleRunner::createHelperSet($em);
+return ConsoleRunner::createHelperSet($em);

@@ -1,29 +1,26 @@
 <?php
 namespace API\Controllers;
 
-use API\Models\Entity\Users\User;
+use API\Core\Salt;
+use API\Core\ResponseTemplate;
 use API\Models\Entity\Users\UserToken;
-use Doctrine\ORM\Query;
 use Firebase\JWT\JWT;
-use Monolog\Handler\Curl\Util;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
-use Slim\Http\Response;
 use Slim\Container;
-use YAPI\Core\ResponseTemplate;
-use YAPI\Core\Utilities;
+use Slim\Http\Response;
 
 /**
- * YAPI/SLIM : API\Controllers\AuthController
+ * YAPI : API\Controllers\AuthController
  * ----------------------------------------------------------------------
- * Handles the authentication endpoints.
- *
+ * Handles authentication and validation endpoints.
+ * 
  * @package     API\Controllers
  * @author      Fabio Y. Goto <lab@yuiti.com.br>
  * @copyright   2018 Fabio Y. Goto
- * @since       0.0.1
+ * @since       0.0.2
  */
-class AuthController
+class AuthController 
 {
     /**
      * Slim container handler.
@@ -31,219 +28,234 @@ class AuthController
      * @var Container
      */
     protected $container;
-    
+
     /**
      * AuthController constructor.
      *
-     * @param App $app
-     *      Slim application instance.
+     * @param App $app 
+     *      Slim application reference
      */
-    public function __construct(App &$app)
+    public function __construct(App &$app) 
     {
-        // Set container
+        // Set container reference
         $this->container = $app->getContainer();
-        
-        // Create a reference to this controller
+
+        // Keep a reference to this
         $ctrl = $this;
-        
-        // Define healthcheck route
-        $app->group('/auth', function() use ($app, $ctrl) {
+
+        // Define routes
+        $app->group('/auth', function () use ($app, $ctrl) {
             // Authentication handler
             $app->map(['GET', 'POST'], '', [$ctrl, 'authenticate']);
-            
+
             // Token validation handler
             $app->any('/validate', [$ctrl, 'validate']);
         });
     }
-    
+
     /**
      * Handles user authentication on POST and GET.
      *
      * @param Request $request
      * @param Response $response
      * @param array $args
-     * @return mixed
+     * @return mixed 
      * @throws \Exception
      */
     public function authenticate(
-        Request $request,
-        Response $response,
+        Request $request, 
+        Response $response, 
         array $args
     ) {
-        // Get username/email and password values
+        // Get username/e-mail address and password
         $credentials = $this->userLoginCredentials($request);
-        
-        // Get entity manager and user repository
-        $em     = $this->container->get('em');
-    
-        /**
-         * @var User
-         */
-        $user   = $em->getRepository("API\Models\Entity\Users\User");
-        
-        // If no username/e-mail provided, throw error
+
+        // Did the user provide e-mail/username?
         if (!isset($credentials['username']) && !isset($credentials['email'])) {
-            throw new \Exception('No username or e-mail provided', 401);
+            throw new \Exception('No username/e-mail address provided.', 401);
         }
-        
-        // Define if search for username or e-mail
+
+        // Get entity manager
+        $em = $this->container->get('em');
+
+        // Get user from repository
+        $user = $em->getRepository("API\Models\Entity\Users\User");
+
+        // Search args
+        $args = [];
         if (isset($credentials['email'])) {
-            $user = $user->findOneBy(['email' => $credentials['email']]);
-        } else {
-            $user = $user->findOneBy(['username' => $credentials['username']]);
+            $args['email'] = $credentials['email'];
         }
-        
-        // Invalid user/e-mail
+        if (isset($credentials['username'])) {
+            $args['username'] = $credentials['username'];
+        }
+
+        // Fetch user
+        $user = $user->findOneBy($args);
+
+        // Invalid user
         if ($user === null || !$user) {
             throw new \Exception(
-                'Invalid username or e-mail address',
+                'Invalid username/e-mail address.', 
                 401
             );
         }
-        
+
+        // Retrieve password hash
+        $pass = explode(".", $user->getPassword());
+
         // Invalid password
-        if (!$credentials['password'] || $credentials['password'] != $user->getPassword()) {
+        if (
+            !$credentials['password'] 
+            || !\password_verify($credentials['password'], $pass[0]) 
+            || $pass[1] !== Salt::get()
+        ) {
             throw new \Exception(
-                'Invalid password provided',
+                'Invalid password provided.', 
                 401
             );
         }
-        
-        // Set any previous token as not valid
+
+        // Set any previous token as invalid
         $this->invalidateAllTokens($user->getId());
-        
+
         // Set token values
         $token = [
-            'payload'   => $user->getTokenPayload(),
-            'created'   => time(),
-            'expires'   => time() + (60 * 60 * 24 * 7)
+            'payload' => $user->getTokenPayload(), 
+            'created' => time(), 
+            'expires' => time() + (60 * 60 * 24 * 7)
         ];
-        
-        // Fetch security salt
-        $salt = Utilities::securitySaltRetrieve();
-        
+
         // Sign token
-        $jwt = JWT::encode($token, $salt);
-    
-        // Save the token for further verification
+        $jwt = JWT::encode($token, Salt::get());
+
+        // Save the token in the database
         $save = (new UserToken())
             ->setExpires($token['expires'])
             ->setIsValid(true)
             ->setToken($jwt)
             ->setUser($user);
-        
         $em->persist($save);
         $em->flush();
-        
-        // Build response
+
+        // Return response
         $return = new ResponseTemplate(
-            "SUCCESS",
+            200, 
             [
                 "token" => $jwt
-            ]
+            ], 
+            false
         );
-        return $response->withJson($return);
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withJson($return, 200);
     }
-    
+
     /**
-     * Validates a user token and returns the payload information.
+     * Validates a user token, returning the payload information.
      *
      * @param Request $request
      * @param Response $response
      * @param array $args
-     * @return mixed
+     * @return mixed 
      * @throws \Exception
      */
     public function validate(
-        Request $request,
-        Response $response,
+        Request $request, 
+        Response $response, 
         array $args
     ) {
-        // Fetch token from headers
+        // Fetch token
         $token = ($request->getHeader('Authorization')[0]);
-        
-        // Invalid token
+
+        // Is token not empty?
         if ($token === null || $token === false || $token === "") {
-            throw new \Exception('Invalid user token provided', 401);
+            throw new \Exception('No user token provided.', 401);
         }
-    
-        // Fetch security salt
-        $salt = Utilities::securitySaltRetrieve();
-        
+
         // Decode
         try {
-            $jwt = JWT::decode($token, $salt, array('HS256'));
+            $jwt = JWT::decode($token, Salt::get(), ['HS256']);
         } catch (\Exception $e) {
-            throw new \Exception('Invalid user token provided', 401);
+            throw new \Exception('Invalid user token provided.', 401);
         }
-        
-        // If decoding was ok, return payload
+
+        // Return the payload, if valid
         $return = new ResponseTemplate(
-            "SUCCESS",
-            (array) $jwt
+            200, 
+            (array) $jwt, 
+            false
         );
-        return $response->withJson($return);
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withJson($return);
     }
-    
+
+    // Private Methods
+    // ------------------------------------------------------------------
+
     /**
-     * Returns the credentials used to login.
+     * Invalidates all previous tokens for the user ID provided.
+     *
+     * @param integer $id
+     * @return void
+     */
+    protected function invalidateAllTokens(int $id) 
+    {
+        // Get entity manager + query builder
+        $em = $this->container->get('em');
+        $qb = $em->createQueryBuilder();
+
+        // Set all tokens as invalid
+        $qb->update("API\Models\Entity\Users\UserToken", 't')
+            ->set('t.is_valid', 'false')
+            ->where("t.user = {$id}")
+            ->andWhere('t.is_valid = true')
+            ->getQuery()
+            ->execute();
+    }
+
+    /**
+     * Returns credentials used to login.
      *
      * @param Request $request
      *      Server request object
      * @return array
      */
-    private function userLoginCredentials(Request $request)
+    protected function userLoginCredentials(Request $request): array 
     {
-        // Check request method
-        $method = $request->getMethod();
-    
-        // Getch params
-        $params = ($method === 'GET')
+        // Fetch params
+        $params = ($request->getMethod() === 'GET') 
             ? $request->getQueryParams() : $request->getParsedBody();
         
-        // Holds user data
+        // Will hold user data
         $user = [];
-        
+
         // Get username or e-mail address
-        if (isset($params['user']) || isset($params['username'])) {
-            $user['username'] = (isset($params['username']))
-                ? trim($params['username']) : trim($params['user']);
-        } elseif (isset($params['email'])) {
+        if (isset($params['email'])) {
+            // Extract e-mail address
             $user['email'] = trim($params['email']);
-        }
-        
-        // Only fetch password if username's set
-        if (isset($user['username']) || isset($user['email'])) {
-            if (isset($params['pass'])) {
-                $user['password'] = trim($params['pass']);
-            } elseif (isset($params['password'])) {
-                $user['password'] = trim($params['password']);
+        } elseif (isset($params['user']) || isset($params['username'])) {
+            // Extract value
+            $curr = (isset($params['user'])) 
+                ? trim($params['user']) : trim($params['username']);
+            
+            // Checks if it's an e-mail or not
+            if (filter_var($curr, FILTER_VALIDATE_EMAIL)) {
+                $user['email'] = $curr;
+            } else {
+                $user['username'] = $curr;
             }
-            $user['password'] = Utilities::passwordHash($user['password']);
         }
-        
+
+        // Only fetch password if username is set
+        if (isset($user['username']) || isset($user['email'])) {
+            if (isset($params['pass']) || isset($params['password'])) {
+                $user['password'] = (isset($params['pass'])) 
+                    ? trim($params['pass']) : trim($params['password']);
+            }
+        }
+
         return $user;
-    }
-    
-    /**
-     * Invalidates all previous tokens for the user ID provided.
-     *
-     * @param int $user_id
-     */
-    public function invalidateAllTokens(int $user_id)
-    {
-        // Get entity manager
-        $em = $this->container->get('em');
-        
-        // Create query builder
-        $qb = $em->createQueryBuilder();
-        
-        // Set all tokens from this user as invalid
-        $qb->update('API\Models\Entity\Users\UserToken', 't')
-           ->set('t.is_valid', 'false')
-           ->where("t.user = {$user_id}")
-           ->andWhere("t.is_valid = true")
-           ->getQuery()
-           ->execute();
     }
 }

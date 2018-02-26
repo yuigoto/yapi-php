@@ -1,89 +1,90 @@
 <?php
 namespace API\Controllers;
 
+use API\Core\ResponseTemplate;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 use Slim\Container;
 use Slim\Http\Response;
-use YAPI\Core\ResponseTemplate;
 
 /**
- * YAPI/SLIM : API\Controllers\DummyController
+ * YAPI : API\Controllers\DummyController
  * ----------------------------------------------------------------------
- * DummyController, use as an example on how the API's controllers are to
- * be used.
- *
- * This class must be called by the RouteHandler, inside the appropriate place.
- *
+ * Dummy controller, use it as an example for building controllers and 
+ * setting endpoints.
+ * 
+ * Must be called by the route handler class.
+ * 
  * @package     API\Controllers
  * @author      Fabio Y. Goto <lab@yuiti.com.br>
  * @copyright   2018 Fabio Y. Goto
- * @since       0.0.1
+ * @since       0.0.2
  */
-class DummyController
+class DummyController 
 {
     /**
-     * Slim application instance.
+     * Slim application reference. For internal use.
      *
      * @var App
      */
-    private $app;
-    
+    protected $app;
+
     /**
-     * Slim application Container handler.
+     * Slim dependency container reference. For internal use.
      *
      * @var Container
      */
-    private $container;
-    
+    protected $container;
+
     /**
      * DummyController constructor.
      *
      * @param App $app
-     *      Slim application handler
      */
-    public function __construct(App &$app)
+    public function __construct(App &$app) 
     {
-        // Set variables
-        $this->app          = $app;
-        $this->container    = $app->getContainer();
-        
-        // Handle routes here
-        $this->app->get('/dummy', function(Request $request, Response $response, $args) {
-            $return = new ResponseTemplate(
-                "SUCCESS",
-                [
-                    "hello" => "Oh HAI! Dummy Template Works"
-                ],
-                "Hello, World!"
-            );
-            
-            return $response->withJson($return, 200)
-                ->withHeader('Content-Type', 'application/json');
+        // Set references
+        $this->app = $app;
+        $this->container = $app->getContainer();
+
+        // Set app reference for use in groups
+        $app = $this->app;
+
+        // Pass a reference to self
+        $ctrl = $this;
+
+        // Handle them routes
+        $this->app->group("/dummy", function () use ($app, $ctrl) {
+            $app->map(['GET', 'POST'], '', [$ctrl, 'index']);
         });
-        
-        $this->app->get('/dummy/demo', [$this, 'testMethod']);
     }
-    
+
     /**
-     * Test method for a route handler.
+     * Endpoint index.
      *
      * @param Request $request
      * @param Response $response
      * @param array $args
-     * @return Response
+     * @return mixed
      */
-    public function testMethod(Request $request, Response $response, $args)
-    {
-        $return = new ResponseTemplate(
-            "SUCCESS",
+    public function index(
+        Request $request, 
+        Response $response, 
+        array $args
+    ) {
+        // Set response body
+        $body = new ResponseTemplate(
+            200, 
             [
-                "hello" => "Test Method for Dummy Template Reporting! :D"
-            ],
-            "Hello, Dummy Boy!"
+                'message' => 'Hello, Dummy!'
+            ], 
+            true
         );
-    
-        return $response->withJson($return, 200)
-                        ->withHeader('Content-Type', 'application/json');
+
+        // Return
+        $return = $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withJson($body, 200);
+        return $return;
     }
 }
