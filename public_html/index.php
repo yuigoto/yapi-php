@@ -12,5 +12,5 @@ require_once '../vendor/autoload.php';
  * @copyright   2018 Fabio Y. Goto
  * @since       0.0.2
  */
-$app = (new Api())->getApp();
-$app->run();
+(new Api())->getApp()->run();
+// YES, THAT'S ALL

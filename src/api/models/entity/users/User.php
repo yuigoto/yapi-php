@@ -27,7 +27,7 @@ use Doctrine\ORM\Mapping\Table;
  * 
  * @Entity
  * @Table(name="user")
- * @HasLifeCycleCallbacks
+ * @HasLifecycleCallbacks
  */
 class User extends BaseEntity 
 {
