@@ -1,13 +1,12 @@
-YX : PHP : YAPI
-===============
+# YAPI (Yuiti's API) PHP
 
 > A simple base API project based on Slim and Doctrine. This is very basic, but provides some authentication and token validation.
 > 
 > Use it to bootstrap simple API projects! ;)
 
-### How To
+----------------------------------------------------------------------
 
-Basically, all you need to do is create entities and build them controllers. But there are a few things that you might want to do to customize the API's behavior, so here are some instructions.
+## How To
 
 #### Important (Before you start editing everything here)
 
@@ -93,14 +92,18 @@ The files and instruction above are most of the things you'll have to tinker wit
 
 And that's basically it! :wink:
 
-### Author
+----------------------------------------------------------------------
 
-- **Fabio Y. Goto** ([lab@yuiti.com.br](mailto:lab@yuiti.com.br));
+## Authors
 
-### License
+See `AUTHORS.md` for more information.
 
-This project is licensed under the `MIT License`, please check the `LICENSE.md` file for more information.
+----------------------------------------------------------------------
 
------
+## License
 
-_©2018 Fabio Y. Goto_
+This project is licensed under the `MIT License`. See `LICENSE.md` for more details on the subjects of the license.
+
+----------------------------------------------------------------------
+
+_©2018-2020 Fabio Y. Goto_
