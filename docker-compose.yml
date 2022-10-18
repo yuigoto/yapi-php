@@ -1,0 +1,46 @@
+version: "3.1"
+
+services:
+  yapi_php:
+    container_name: yapi_php
+    image: yuigoto/yx-lamp
+    networks:
+      - yapi_network
+    volumes:
+      - ./:/var/www
+      - ./public/:/var/www/html
+    ports:
+      - 80:80
+    links:
+      - yapi_mariadb
+    environment:
+      APACHE_DOC_ROOT: "var/ww/html"
+      YAPI_DB_HOST: "yapi_mariadb"
+      YAPI_DB_USER: "yapi_user"
+      YAPI_DB_PASSWORD: "password"
+      YAPI_DB_NAME: "yapi"
+
+  yapi_mariadb:
+    container_name: yapi_mariadb
+    image: mariadb:10.2
+    networks:
+      - yapi_network
+    volumes:
+      - ./mysql/:/var/lib/mysql
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_DATABASE: "yapi"
+      MYSQL_USER: "yapi_user"
+      MYSQL_PASSWORD: "password"
+
+
+  yapi_redis:
+    container_name: yapi_redis
+    image: redis:6
+    networks:
+      - yapi_network
+
+networks:
+  yapi_network:

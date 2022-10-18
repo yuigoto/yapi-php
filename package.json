@@ -1,0 +1,25 @@
+{
+  "name": "yapi-php",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "up": "docker compose up -d",
+    "down": "docker compose down",
+    "composer": "docker exec -it yapi_php /bin/bash cd .. && composer install",
+    "enter:php": "docker exec -it yapi_php /bin/bash",
+    "enter:mariadb": "docker exec -it yapi_mariadb /bin/bash",
+    "enter:redis": "docker exec -it yapi_redis /bin/bash"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuigoto/yapi-php.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yuigoto/yapi-php/issues"
+  },
+  "homepage": "https://github.com/yuigoto/yapi-php#readme"
+}
